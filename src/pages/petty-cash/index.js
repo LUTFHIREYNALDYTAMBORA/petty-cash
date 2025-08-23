@@ -1,6 +1,5 @@
 import { Box, Button, IconButton, InputAdornment, Modal, TextField } from "@mui/material";
 import { AddCircleOutline, Cancel, Print, SearchOutlined } from '@mui/icons-material';
-import styles from './styles';
 import StickyHeadTable from "@/components/Table";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -12,13 +11,52 @@ import StartFirebase from '../../configFirebase/index';
 import { ref, set, onValue } from 'firebase/database';
 import AlertBase from "@/components/elements/Alert";
 import PreviewDoc from "@/components/Fragments/PreviewDoc";
-import { styleModalList } from "./utils";
 import moment from "moment";
 import 'moment/locale/id';
 import 'dayjs/locale/id';
 import dayjs from 'dayjs';
 
 const db = StartFirebase();
+
+const styles = {
+    btn: {
+        textTransform: 'capitalize',
+    },
+    btnPrintMonth: {
+        textTransform: 'capitalize',
+        height: '55px'
+    },
+    fieldSearch: {
+        margin: '20px 20px 20px 0px'
+    },
+    iconAdd: {
+        marginRight: 1
+    },
+    titleHeader: {
+        fontSize: '30px',
+        fontWeight: 700
+    },
+    wrapHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    }
+}
+
+const styleModalList = {
+  position: 'absolute',
+  top: '45%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '70%',
+  height: '655px',
+  bgcolor: 'background.paper',
+  border: '1px solid grey',
+  borderRadius: '8px',
+  boxShadow: 24,
+  marginTop: '30px',
+  typography: 'body1'
+};
 
 export default function PettyCash() {
     const [search, setSeach] = useState('');
