@@ -41,8 +41,9 @@ const styles = {
         marginRight: 1
     },
     titleHeader: {
-        fontSize: '30px',
-        fontWeight: 700
+        fontSize: '25px',
+        fontWeight: 700,
+        fontFamily: '__nextjs-Geist'
     },
     wrapHeader: {
         display: 'flex',
@@ -252,6 +253,7 @@ export default function PettyCash() {
                     </div>
                 </div>
             </PopUp>
+            <div style={styles.titleHeader}>PT. TANAH TUMBUH JAYA - TANAH TUMBUH LAND</div>
             <div style={styles.wrapHeader}>
                 <div style={styles.titleHeader}>PETTY CASH</div>
                 <Button
