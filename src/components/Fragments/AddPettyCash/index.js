@@ -2,9 +2,10 @@ import { parser, revParse } from "@/utils/text";
 import { Button, FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import moment from "moment";
 import 'moment/locale/id';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function AddPettyCash({ onSave }) {
+export default function AddPettyCash({ onSave, dataEdit }) {
+    const [isDisabled, setIsDisabled] = useState(false);
     const [isFocusedIncome, setIsFocusedIncome] = useState(false);
     const [isFocusedOutcome, setIsFocusedOutcome] = useState(false);
     const [data, setData] = useState({
@@ -14,6 +15,26 @@ export default function AddPettyCash({ onSave }) {
         income: null,
         outcome: null,
     });
+
+    useEffect(() => {
+        if (dataEdit) {
+            setData({
+                date: dataEdit.date,
+                account: dataEdit.account,
+                desc: dataEdit.description,
+                income: dataEdit.income,
+                outcome: dataEdit.outcome,
+            });
+        }
+    }, [dataEdit]);
+
+    useEffect(() => {
+        if (data.account !== '' && data.desc !== '' && data.income !== null && data.outcome !== null) {
+            setIsDisabled(false);
+        } else {
+            setIsDisabled(true);
+        }
+    }, [data]);
 
     const handleFocus = (type) => () => {
         if (type === 'income') {
@@ -47,7 +68,7 @@ export default function AddPettyCash({ onSave }) {
             description: data.desc,
             income: revParse(data.income),
             outcome: revParse(data.outcome),
-        });
+        }, dataEdit ? 'edit' : 'save');
     }
 
     return (
@@ -120,7 +141,7 @@ export default function AddPettyCash({ onSave }) {
                 onChange={handleChange('outcome')}
             />
             <Button
-                disabled={!data.account || !data.desc || !data.income || !data.outcome}
+                disabled={isDisabled}
                 fullWidth
                 size="large"
                 variant="contained"

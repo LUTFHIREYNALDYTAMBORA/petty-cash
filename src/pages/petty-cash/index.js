@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, InputAdornment, Modal, TextField } from "@mui/material";
-import { AddCircleOutline, Cancel, Print, SearchOutlined } from '@mui/icons-material';
+import { AddCircleOutline, Cancel, Print, SearchOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import StickyHeadTable from "@/components/Table";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import PopUp from "@/components/Popup";
 import AddPettyCash from "@/components/Fragments/AddPettyCash";
 import StartFirebase from '../../configFirebase/index';
-import { ref, set, onValue } from 'firebase/database';
+import { ref, set, onValue, get } from 'firebase/database';
 import AlertBase from "@/components/elements/Alert";
 import PreviewDoc from "@/components/Fragments/PreviewDoc";
 import moment from "moment";
@@ -44,28 +44,30 @@ const styles = {
 }
 
 const styleModalList = {
-  position: 'absolute',
-  top: '45%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '70%',
-  height: '655px',
-  bgcolor: 'background.paper',
-  border: '1px solid grey',
-  borderRadius: '8px',
-  boxShadow: 24,
-  marginTop: '30px',
-  typography: 'body1'
+    position: 'absolute',
+    top: '45%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '70%',
+    height: '655px',
+    bgcolor: 'background.paper',
+    border: '1px solid grey',
+    borderRadius: '8px',
+    boxShadow: 24,
+    marginTop: '30px',
+    typography: 'body1'
 };
 
 export default function PettyCash() {
     const [search, setSeach] = useState('');
+    const [confirmation, setConfirmation] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [previewDoc, setPreviewDoc] = useState(false);
     const [filterDate, setFilterDate] = useState(moment(new Date()).locale('id').format('MMMM YYYY'));
     const [date, setDate] = useState(dayjs(new Date()));
     const [dataTable, setDataTable] = useState([]);
     const [dataFiltered, setDataFiltered] = useState([]);
+    const [dataEdit, setDataEdit] = useState(null);
     const [alert, setAlert] = useState({
         open: false, text: '', severity: ''
     });
@@ -104,11 +106,26 @@ export default function PettyCash() {
         setAlert({ open: false, text: '', severity: '' });
     };
 
-    const handleAction = (action) => () => {
-        if (action === 'delete') {
-            set(ref(db, 'data/' + (dataTable.length - 1)), null);
-        } else if (action === 'edit') {
-            return;
+    const handleRemove = () => {
+        setConfirmation(!confirmation);
+        set(ref(db, 'data/' + (dataTable.length - 1)), null);
+        setAlert({ open: true, text: 'Data berhasil dihapus', severity: 'success' });
+        setDataEdit(null);
+    }
+
+    const handleAction = (action) => async () => {
+        try {
+            const lastDataRef = ref(db, 'data/' + (dataTable.length - 1));
+            const snapshot = await get(lastDataRef);
+            if (snapshot.exists()) {
+                setDataEdit(snapshot.val());
+                if (action === 'delete') { handleConfirmation(); }
+                else { handleAdd(); }
+            } else {
+                setAlert({ open: true, text: 'Data tidak ditemukan', severity: 'error' });
+            }
+        } catch (error) {
+            setAlert({ open: true, text: 'Data tidak ditemukan', severity: 'error' });
         }
     }
 
@@ -121,26 +138,42 @@ export default function PettyCash() {
         setShowPopup(!showPopup);
     }
 
+    const handleClosePopup = () => {
+        setShowPopup(!showPopup);
+        setDataEdit(null);
+    }
+
     const handleChangeDate = (newValue) => {
         setDate(newValue);
         setFilterDate(moment(newValue.$d).locale('id').format('MMMM YYYY'));
     }
 
-    const handleSave = (newValue) => {
+    const handleConfirmation = () => {
+        setConfirmation(!confirmation);
+    }
+
+    const handleCloseConfirmation = () => {
+        setConfirmation(!confirmation);
+        setDataEdit(null);
+    }
+
+    const handleSave = (newValue, type) => {
         const firstId = moment(new Date()).locale('id').format('YYYY-MM-DD');
         const lastBalance = dataTable.length > 0 ? dataTable.at(-1).balance : 0;
+        const lastBalanceEdit = dataTable.length > 0 ? dataTable.at(-2).balance : 0;
         const income = Number(newValue.income) || 0;
         const outcome = Number(newValue.outcome) || 0;
-        const newPath = `data/${dataTable.length}`;
+        const newPath = type === 'edit' ? `data/${dataTable.length - 1}` : `data/${dataTable.length}`;
         set(ref(db, newPath), {
             ...newValue,
             income: income,
             outcome: outcome,
-            balance: lastBalance + income - outcome,
+            balance: (type === 'edit' ? lastBalanceEdit : lastBalance) + income - outcome,
             id: `${firstId}-${dataTable.length + 1}`
         });
         handleAdd();
         setAlert({ open: true, text: 'Data berhasil disimpan', severity: 'success' });
+        setDataEdit(null);
     }
 
     return (
@@ -167,12 +200,49 @@ export default function PettyCash() {
             />
             <PopUp
                 open={showPopup}
-                onClose={handleAdd}
                 closeButton
-                handleClose={handleAdd}
-                title="Tambah Data Baru"
+                handleClose={handleClosePopup}
+                title={dataEdit ? "Edit Data" : "Tambah Data Baru"}
             >
-                <AddPettyCash onSave={handleSave} />
+                <AddPettyCash onSave={handleSave} dataEdit={dataEdit} />
+            </PopUp>
+            <PopUp
+                open={confirmation}
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <WarningAmberOutlined sx={{ marginRight: '5px', marginBottom: '4px', fontSize: '20px' }} color="warning"/>
+                        <div>Hapus Data</div>
+                    </div>
+                }
+            >
+                <div>
+                    <div>Yakin ingin menghapus data ini :</div>
+                    <ul>
+                        <li>Tanggal : {dataEdit?.date}</li>
+                        <li>Tipe Akun : {dataEdit?.account}</li>
+                        <li>Keterangan : {dataEdit?.description}</li>
+                        <li>Uang Masuk : {dataEdit?.income}</li>
+                        <li>Uang Keluar : {dataEdit?.outcome}</li>
+                    </ul>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Button
+                            sx={{ ...styles.btn, marginRight: '5px' }}
+                            fullWidth variant="outlined"
+                            color="inherit"
+                            onClick={handleCloseConfirmation}
+                        >
+                            Kembali
+                        </Button>
+                        <Button
+                            sx={{ ...styles.btn, marginLeft: '5px' }}
+                            fullWidth variant="contained"
+                            color="warning"
+                            onClick={handleRemove}
+                        >
+                            Yakin
+                        </Button>
+                    </div>
+                </div>
             </PopUp>
             <div style={styles.wrapHeader}>
                 <div style={styles.titleHeader}>PETTY CASH</div>
@@ -222,7 +292,7 @@ export default function PettyCash() {
                     <Print sx={styles.iconAdd} fontSize="small" /> Cetak Laporan Perbulan
                 </Button>
             </div>
-            <StickyHeadTable dataTable={dataFiltered} onHandleAction={handleAction} filterDate={filterDate}/>
+            <StickyHeadTable dataTable={dataFiltered} onHandleAction={handleAction} filterDate={filterDate} />
         </div>
     )
 }

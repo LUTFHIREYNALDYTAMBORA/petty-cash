@@ -15,7 +15,7 @@ const style = {
 };
 
 export default function PopUp(props) {
-    const { title, children, open, handleClose } = props;
+    const { title, children, open, handleClose, closeButton } = props;
     return (
         <Modal
             open={open}
@@ -27,9 +27,9 @@ export default function PopUp(props) {
                     <Typography id="modal-modal-title" variant="h6" component="h2">
                         {title}
                     </Typography>
-                    <div onClick={handleClose}>
+                    {closeButton && <div onClick={handleClose}>
                         <IconButton><CloseRounded /></IconButton>
-                    </div>
+                    </div>}
                 </div>
                 <Typography id="modal-modal-description" sx={{ mt: 2 }}>
                     {children}
