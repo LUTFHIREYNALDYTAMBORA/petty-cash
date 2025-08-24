@@ -22,8 +22,8 @@ export default function AddPettyCash({ onSave, dataEdit }) {
                 date: dataEdit.date,
                 account: dataEdit.account,
                 desc: dataEdit.description,
-                income: dataEdit.income,
-                outcome: dataEdit.outcome,
+                income: parser(dataEdit.income),
+                outcome: parser(dataEdit.outcome),
             });
         }
     }, [dataEdit]);
@@ -119,7 +119,7 @@ export default function AddPettyCash({ onSave, dataEdit }) {
                 onFocus={handleFocus('income')}
                 onBlur={handleBlur('income')}
                 InputProps={{
-                    startAdornment: isFocusedIncome ? (
+                    startAdornment: isFocusedIncome || dataEdit ? (
                     <InputAdornment position="start">Rp</InputAdornment>
                     ) : null
                 }}
@@ -133,7 +133,7 @@ export default function AddPettyCash({ onSave, dataEdit }) {
                 onFocus={handleFocus('outcome')}
                 onBlur={handleBlur('outcome')}
                 InputProps={{
-                    startAdornment: isFocusedOutcome ? (
+                    startAdornment: isFocusedOutcome || dataEdit ? (
                     <InputAdornment position="start">Rp</InputAdornment>
                     ) : null
                 }}

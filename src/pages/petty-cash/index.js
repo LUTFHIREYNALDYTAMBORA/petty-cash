@@ -22,7 +22,14 @@ const styles = {
     btn: {
         textTransform: 'capitalize',
     },
+    btnAddData: {
+        width: '230px',
+        height: '50px',
+        fontWeight: 700,
+        textTransform: 'capitalize',
+    },
     btnPrintMonth: {
+        fontWeight: 700,
         textTransform: 'capitalize',
         height: '55px'
     },
@@ -210,7 +217,7 @@ export default function PettyCash() {
                 open={confirmation}
                 title={
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <WarningAmberOutlined sx={{ marginRight: '5px', marginBottom: '4px', fontSize: '20px' }} color="warning"/>
+                        <WarningAmberOutlined sx={{ marginRight: '5px', marginBottom: '2px', fontSize: '20px' }} color="warning"/>
                         <div>Hapus Data</div>
                     </div>
                 }
@@ -248,7 +255,7 @@ export default function PettyCash() {
                 <div style={styles.titleHeader}>PETTY CASH</div>
                 <Button
                     size="large"
-                    style={styles.btn}
+                    style={styles.btnAddData}
                     variant="contained"
                     color="warning"
                     onClick={handleAdd}
