@@ -15,6 +15,7 @@ import moment from "moment";
 import 'moment/locale/id';
 import 'dayjs/locale/id';
 import dayjs from 'dayjs';
+import { moneyDotFormat } from "@/utils/text";
 
 const db = StartFirebase();
 
@@ -228,8 +229,8 @@ export default function PettyCash() {
                         <li>Tanggal : {dataEdit?.date}</li>
                         <li>Tipe Akun : {dataEdit?.account}</li>
                         <li>Keterangan : {dataEdit?.description}</li>
-                        <li>Uang Masuk : {dataEdit?.income}</li>
-                        <li>Uang Keluar : {dataEdit?.outcome}</li>
+                        <li>Uang Masuk (Rp) : {moneyDotFormat(dataEdit?.income)}</li>
+                        <li>Uang Keluar (Rp) : {moneyDotFormat(dataEdit?.outcome)}</li>
                     </ul>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Button
